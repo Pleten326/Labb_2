@@ -2,37 +2,142 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Моє Резюме</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Павло</h1>
-        <p>Контакти: <a href="mailto:pavlo@example.com">Надіслати листа</a></p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Павло</h1>
+            <p>Контакти: <a href="mailto:pavlo@example.com">Надіслати листа</a></p>
+            <!-- Додана кнопка перемикання теми -->
+            <button id="theme-toggle" style="margin-top: 10px; padding: 6px 12px; border-radius:6px; border:none; cursor:pointer; background:#38bdf8; color:#0f172a;">
+                Змінити тему
+            </button>
+        </header>
 
-    <main>
-        <section>
-            <h2>Про себе</h2>
-            <p>Цікавлюся захистом інформації, граю на гітарі, монтую відео</p>
-        </section>
+        <main>
+            <section>
+                <h2>Про себе</h2>
+                <p>Цікавлюся захистом інформації, граю на гітарі, монтую відео</p>
+            </section>
 
-        <section>
-            <h2>Досвід та навички</h2>
-            <ul>
-                <li>Навчаюся на третьому курсі кібербезпеки</li>
-                <li>5 років досвіду гри на гітарі</li>
-                <li>Використання Adobe Premiere Pro, багато великих та успішних проектів</li>
-            </ul>
-        </section>
+            <section>
+                <h2>Досвід та навички</h2>
+                <ul>
+                    <li>Навчаюся на третьому курсі кібербезпеки</li>
+                    <li>5 років досвіду гри на гітарі</li>
+                    <li>Використання Adobe Premiere Pro, багато великих та успішних проектів</li>
+                </ul>
+            </section>
 
-        <section>
-            <h2>Інтереси</h2>
-            <p>Граю на гітарі, захоплююся іграми, гітарою, творчістю та читаю книжки.</p>
-        </section>
-    </main>
+            <section>
+                <h2>Інтереси</h2>
+                <p>Граю на гітарі, захоплююся іграми, гітарою, творчістю та читаю книжки.</p>
+            </section>
 
-    <footer>
-        <p>© 2026 Павло</p>
-    </footer>
+            <section>
+                <h2>Відгуки попередніх роботодавців</h2>
+                <div id="comments"></div>
+            </section>
+        </main>
+
+        <footer id="footer">
+            <p>© 2026 Павло</p>
+            <p id="system-info"></p> 
+        </footer>
+    </div>
+
+    <!-- Модалка -->
+    <div id="modal">
+        <h2>Форма зворотнього зв'язку</h2>
+        <form action="https://formspree.io/f/xgoplpyk" method="POST">
+            <label>Ім’я: <input type="text" name="name" required></label><br><br>
+            <label>Email: <input type="email" name="email" required></label><br><br>
+            <label>Номер телефону: <input type="tel" name="phone"></label><br><br>
+            <label>Повідомлення:<br><textarea name="message" required></textarea></label><br><br>
+            <button type="submit">Відправити</button>
+        </form>
+    </div>
+    <div id="modal-backdrop"></div>
+
+    <script>
+        // --- Завдання 1: системна інформація ---
+        const systemInfo = {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform
+        };
+        localStorage.setItem("systemInfo", JSON.stringify(systemInfo));
+        const storedInfo = JSON.parse(localStorage.getItem("systemInfo"));
+        const systemInfoP = document.getElementById("system-info");
+        systemInfoP.innerHTML = `User Agent: ${storedInfo.userAgent} <br> Platform: ${storedInfo.platform}`;
+
+        // --- Завдання 2: динамічні коментарі ---
+        const commentsDiv = document.getElementById("comments");
+        const variantNumber = 21;
+        fetch(`https://jsonplaceholder.typicode.com/posts/${variantNumber}/comments`)
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(comment => {
+              const commentElement = document.createElement("div");
+              commentElement.style.borderBottom = "1px solid #ccc";
+              commentElement.style.marginBottom = "10px";
+              commentElement.style.paddingBottom = "5px";
+              commentElement.innerHTML = `<strong>${comment.name}</strong> (${comment.email}):<br>${comment.body}`;
+              commentsDiv.appendChild(commentElement);
+            });
+          })
+          .catch(error => console.error("Помилка при завантаженні коментарів:", error));
+
+        // --- Завдання 3: показ модалки через 1 хв ---
+        setTimeout(() => {
+            const modal = document.getElementById("modal");
+            const backdrop = document.getElementById("modal-backdrop");
+            modal.style.display = "block";
+            backdrop.style.display = "block";
+        }, 60000);
+
+        // --- Завдання 4: нічна/денна тема ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const container = document.querySelector('.container');
+
+        function applyTheme(theme) {
+            if(theme === 'day') {
+                document.body.classList.add('day');
+                document.body.classList.remove('night');
+                container.classList.add('day');
+                container.classList.remove('night');
+                localStorage.setItem('theme', 'day');
+            } else {
+                document.body.classList.add('night');
+                document.body.classList.remove('day');
+                container.classList.add('night');
+                container.classList.remove('day');
+                localStorage.setItem('theme', 'night');
+            }
+        }
+
+        function autoTheme() {
+            const hour = new Date().getHours();
+            if(hour >= 7 && hour < 21) {
+                applyTheme('day');
+            } else {
+                applyTheme('night');
+            }
+        }
+
+        const savedTheme = localStorage.getItem('theme');
+        if(savedTheme) {
+            applyTheme(savedTheme);
+        } else {
+            autoTheme();
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('day') ? 'day' : 'night';
+            applyTheme(currentTheme === 'day' ? 'night' : 'day');
+        });
+    </script>
 </body>
 </html>
